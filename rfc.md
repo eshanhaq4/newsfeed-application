@@ -17,7 +17,7 @@ The design of this application is meant to prioritize correctness for its basic 
 
 B. System Diagram
 
-![System Diagram](system-diagram.png)
+![System Diagram](system_diagram.jpg)
 
 C. Data Model
 
