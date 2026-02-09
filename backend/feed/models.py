@@ -16,10 +16,11 @@ class Post(models.Model):
 class Like(models.Model):
     user_id = models.IntegerField()
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Like by User {self.user_id} on Post {self.post.id}"
     
     class Meta:
-        unique_together = ('user_id', 'post')
+        constraints = [
+            models.UniqueConstraint(fields=['user_id', 'post'], name='unique_like')
+        ]

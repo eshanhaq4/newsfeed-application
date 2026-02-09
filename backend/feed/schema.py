@@ -1,6 +1,8 @@
 import typing
 import strawberry
 import feed.models as models
+from django.db.models import Q
+from django.db import transaction
 from datetime import datetime
 
 @strawberry.type
@@ -23,11 +25,33 @@ def post_gql(post: models.Post) -> PostGQL:
     )
 
 @strawberry.type
+class FeedPage:
+    posts: typing.List[PostGQL]
+    next_cursor: typing.Optional[str]
+
+@strawberry.type
 class Query:
+    
     @strawberry.field
-    def posts(self) -> typing.List[PostGQL]:
-        posts = models.Post.objects.all().order_by("-created_at")
-        return [post_gql(post) for post in posts]
+    def feed(self, cursor: typing.Optional[str] = None, limit: int = 20) -> FeedPage:
+        posts = models.Post.objects.all().order_by("-created_at", "-id")
+        if cursor:
+            try:
+                created_at_str, id_str = cursor.split("_")
+                created_at = datetime.fromisoformat(created_at_str)
+                post_id = int(id_str)
+                posts = posts.filter(Q(created_at__lt=created_at) | (Q(created_at=created_at, id__lt=post_id)))
+            except ValueError:
+                pass
+
+        posts = list(posts[:limit])
+        next_cursor = None
+        if len(posts) == limit:
+            last_post = posts[-1]
+            next_cursor = f"{last_post.created_at.isoformat()}_{last_post.id}"
+        
+        return FeedPage(posts=[post_gql(post) for post in posts], next_cursor=next_cursor)
+
     
 @strawberry.type
 class Mutation:
@@ -38,15 +62,16 @@ class Mutation:
 
     @strawberry.mutation
     def toggle_like(self, user_id: int, post_id: int) -> PostGQL:
-        post = models.Post.objects.get(id=post_id)
-        created = models.Like.objects.filter(user_id=user_id, post=post)
+        with transaction.atomic():
+            post = models.Post.objects.select_for_update().get(id=post_id)
+            created = models.Like.objects.filter(user_id=user_id, post=post)
 
-        if created.exists():
-            created.delete()
-            post.like_count -= 1
-        else:
-            models.Like.objects.create(user_id=user_id, post=post)
-            post.like_count += 1
+            if created.exists():
+                created.delete()
+                post.like_count -= 1
+            else:
+                models.Like.objects.create(user_id=user_id, post=post)
+                post.like_count += 1
 
         post.save()
         post.refresh_from_db()
