@@ -41,3 +41,32 @@ export async function fetchFeed(newCursor: string | null = null): Promise<FeedRe
 
     return json.data.feed;
 }
+
+export async function toggleLike(postId: number, userId: number): Promise<Post> {
+  const res = await fetch("http://127.0.0.1:8000/graphql/", { 
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+        query: `
+          mutation ToggleLike($postId: Int!, $userId: Int!) {
+            toggleLike(postId: $postId, userId: $userId) {
+              id
+              content
+              createdAt
+              likeCount
+            }
+          }
+        `,
+         variables: {
+          postId,
+          userId,
+        },
+      }),
+    });
+
+    const json = await res.json();
+
+    return json.data.toggleLike;
+  }

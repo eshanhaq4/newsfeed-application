@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Post, fetchFeed } from "../lib/api";
+import { Post, fetchFeed, toggleLike } from "../lib/api";
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -21,6 +21,17 @@ export default function Feed() {
 
     setCursor(data.nextCursor);
     setLoading(false);
+  }
+
+  async function handleLikes(postId: number) {
+    // For simplicity, hardcoded user ID here.
+    const resultPost = await toggleLike(postId, 1);
+      // Update the like count in the UI
+        setPosts((prev) => 
+            prev.map((post) => 
+                post.id === resultPost.id ? resultPost : post
+        )
+    );
   }
 
   useEffect(() => {
@@ -46,6 +57,9 @@ export default function Feed() {
               Posted at: {new Date(post.createdAt).toLocaleString()} | Likes: {post.likeCount}
             </small>
           </p>
+          <button onClick={() => handleLikes(post.id)}>
+            Like
+            </button>
         </div>
       ))}
 
