@@ -49,24 +49,74 @@ export async function toggleLike(postId: number, userId: number): Promise<Post> 
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-        query: `
-          mutation ToggleLike($postId: Int!, $userId: Int!) {
-            toggleLike(postId: $postId, userId: $userId) {
-              id
-              content
-              createdAt
-              likeCount
-            }
+      query: `
+        mutation ToggleLike($postId: Int!, $userId: Int!) {
+          toggleLike(postId: $postId, userId: $userId) {
+            id
+            content
+            createdAt
+            likeCount
           }
-        `,
-         variables: {
-          postId,
-          userId,
-        },
-      }),
-    });
+        }
+      `,
+      variables: {
+        postId,
+        userId,
+      },
+    }),
+  });
 
-    const json = await res.json();
+  const json = await res.json();
+  
+  return json.data.toggleLike;
+}
 
-    return json.data.toggleLike;
-  }
+export async function createPost(creatorId: number, content: string): Promise<Post> {
+  const res = await fetch("http://127.0.0.1:8000/graphql/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: `
+        mutation CreatePost($creatorId: Int!, $content: String!) {
+          createPost(creatorId: $creatorId, content: $content) {
+            id
+            content
+            createdAt
+            likeCount
+          }
+        }
+      `,
+      variables: {
+        content,
+        creatorId,
+      },
+    }),
+  });
+  
+  const json = await res.json();
+  return json.data.createPost;
+}
+
+export async function deletePost(postId: number): Promise<number> {
+  const res = await fetch("http://127.0.0.1:8000/graphql/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: `
+        mutation DeletePost($postId: Int!) {
+          deletePost(postId: $postId)
+        }
+      `,
+      variables: {
+        postId,
+      },
+    }),
+  });
+
+  const json = await res.json();
+  return json.data.deletePost;
+}
