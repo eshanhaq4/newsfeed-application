@@ -39,6 +39,11 @@ export async function fetchFeed(newCursor: string | null = null): Promise<FeedRe
 
     const json = await res.json();
 
+    if (json.errors) {
+      console.error("GraphQL Errors:", json.errors);
+      throw new Error("Failed to fetch feed");
+    }
+
     return json.data.feed;
 }
 
@@ -67,6 +72,11 @@ export async function toggleLike(postId: number, userId: number): Promise<Post> 
   });
 
   const json = await res.json();
+
+  if (json.errors) {
+    console.error("GraphQL Errors:", json.errors);
+    throw new Error("Failed to process like/unlike");
+  }
   
   return json.data.toggleLike;
 }
@@ -96,6 +106,12 @@ export async function createPost(creatorId: number, content: string): Promise<Po
   });
   
   const json = await res.json();
+
+  if (json.errors) {
+    console.error("GraphQL Errors:", json.errors);
+    throw new Error("Failed to create post");
+  }
+
   return json.data.createPost;
 }
 
@@ -118,5 +134,45 @@ export async function deletePost(postId: number): Promise<number> {
   });
 
   const json = await res.json();
+
+  if (json.errors) {
+    console.error("GraphQL Errors:", json.errors);
+    throw new Error("Failed to delete post");
+  }
+
   return json.data.deletePost;
+}
+
+export async function editPost(postId: number, newContent: string): Promise<Post> {
+  const res = await fetch("http://127.0.0.1:8000/graphql/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: `
+        mutation EditPost($postId: Int!, $newContent: String!) {
+          editPost(postId: $postId, newContent: $newContent) {
+            id
+            content
+            createdAt
+            likeCount
+          }
+        }
+      `,
+      variables: {
+        postId,
+        newContent,
+      },
+    }),
+  });
+
+  const json = await res.json();
+
+  if (json.errors) {
+    console.error("GraphQL Errors:", json.errors);
+    throw new Error("Failed to edit post");
+  }
+  
+  return json.data.editPost;
 }

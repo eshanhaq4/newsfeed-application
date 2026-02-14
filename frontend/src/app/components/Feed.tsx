@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Post, fetchFeed, toggleLike, createPost, deletePost } from "../lib/api";
+import { Post, fetchFeed, toggleLike, createPost, deletePost, editPost } from "../lib/api";
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [newPost, setNewPost] = useState("");
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editedContent, setEditedContent] = useState("");
   
   async function loadFeed(newCursor: string | null = null) {
     setLoading(true);
@@ -44,6 +46,21 @@ export default function Feed() {
     setNewPost("");
   }
 
+  async function handleEditPost(postId: number) {
+    if (!editedContent.trim()) 
+        return;
+
+    const editedPost = await editPost(postId, editedContent);
+
+    setPosts((prev) => 
+        prev.map((post) => 
+            post.id === editedPost.id ? editedPost : post
+        )
+    );
+    setEditingPostId(null);
+    setEditedContent("");
+  }
+
   async function handleDeletePost(postId: number) {
     const deleted = await deletePost(postId);
     setPosts((prev) => prev.filter((post) => deleted !== post.id));
@@ -76,7 +93,23 @@ export default function Feed() {
             marginBottom: "1rem",
           }}
         >
-          <p>{post.content}</p>
+        {editingPostId === post.id ? (
+            <>
+                <textarea
+                    value={editedContent}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    style={{ width: "100%", padding: "0.5rem" }}
+                />
+                <button onClick={() => handleEditPost(post.id)} style={{ marginTop: "0.5rem" }}>
+                    Save
+                </button>
+                <button onClick={() => setEditingPostId(null)} style={{ marginLeft: "0.5rem" }}>
+                    Cancel
+                </button>
+            </>
+        ) : (
+            <p>{post.content}</p>
+        )}
           <p>
             <small>
               Posted at: {new Date(post.createdAt).toLocaleString()} | Likes: {post.likeCount}
@@ -84,6 +117,9 @@ export default function Feed() {
           </p>
           <button onClick={() => handleLikes(post.id)} style={{ marginRight: "0.5rem" }}>
             Like
+            </button>
+          <button onClick={() => {setEditingPostId(post.id); setEditedContent(post.content);}}>
+            Edit
             </button>
           <button onClick={() => handleDeletePost(post.id)} style={{ marginLeft: "0.5rem" }}>
             Delete
