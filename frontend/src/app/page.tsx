@@ -8,7 +8,12 @@ import Feed from "./components/Feed";
 
 export default function Home() {
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ 
+        maxWidth: "600px", 
+        margin: "0 auto",
+        padding: "2rem",
+        textAlign: "center",
+      }}>
       <h1>Welcome to the Newsfeed App</h1>
       <p>This is the home page. Navigate to the feed to see posts.</p>
       <Feed />

@@ -71,14 +71,24 @@ export default function Feed() {
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ 
+        maxWidth: "600px", 
+        margin: "0 auto",
+        padding: "2rem" }}>
       <h1>Newsfeed</h1>
         <div style={{ marginBottom: "1rem" }}>
             <textarea
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
                 placeholder="What's on your mind?"
-                style={{ width: "100%", padding: "0.5rem" }}
+                style={{ 
+                    width: "100%", 
+                    padding: "0.5rem",
+                    color: "#d7dcd6",
+                    backgroundColor: "#2e0b2e",
+                    border: "1px solid #d7dcd6",
+                    borderRadius: "4px", 
+                }}
             />
             <button onClick={handleCreatePost} style={{ marginTop: "0.5rem" }}>
                 Post
@@ -88,7 +98,9 @@ export default function Feed() {
         <div
           key={post.id}
           style={{
-            border: "1px solid black",
+            backgroundColor: "#2e0b2e",
+            border: "1px solid #d7dcd6",
+            borderRadius: "8px",
             padding: "1rem",
             marginBottom: "1rem",
           }}
@@ -112,16 +124,27 @@ export default function Feed() {
         )}
           <p>
             <small>
-              Posted at: {new Date(post.createdAt).toLocaleString()} | Likes: {post.likeCount}
+              Posted at: {new Date(post.createdAt).toLocaleString()} | Likes ❤️ {post.likeCount}
             </small>
           </p>
-          <button onClick={() => handleLikes(post.id)} style={{ marginRight: "0.5rem" }}>
+          <button onClick={() => handleLikes(post.id)} 
+            style={{ 
+                marginRight: "0.5rem",
+                cursor: "pointer",
+            }}>
             Like
             </button>
-          <button onClick={() => {setEditingPostId(post.id); setEditedContent(post.content);}}>
+          <button onClick={() => {setEditingPostId(post.id); setEditedContent(post.content);}}
+            style={{ 
+                cursor: "pointer" 
+            }}>
             Edit
             </button>
-          <button onClick={() => handleDeletePost(post.id)} style={{ marginLeft: "0.5rem" }}>
+          <button onClick={() => handleDeletePost(post.id)} 
+            style={{ 
+                marginLeft: "0.5rem", 
+                cursor: "pointer", 
+            }}>
             Delete
             </button>
         </div>
