@@ -27,10 +27,6 @@ Feed pagination uses a cursor derived from each post's creation timestamp and ID
 
 Like and unlike operations are handled inside database transactions with row-level locking so that the server remains the authoritative source of the post's like state.
 
-![System Diagram](system_diagram.jpg)
-
-Additional design decisions and failure-mode considerations are documented in [`rfc.md`](rfc.md).
-
 ## Running Locally
 
 ### Backend
